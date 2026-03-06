@@ -1,20 +1,4 @@
 {
-  "todos": [
-    {
-      "id": "50d5",
-      "title": "online todo",
-      "completed": false
-    },
-    {
-      "id": "fcbf",
-      "title": "todo 2",
-      "completed": false
-    },
-    {
-      "id": "5f2f",
-      "title": "todo 4",
-      "completed": false
-    }
-  ],
+  "todos": [],
   "$schema": "./node_modules/json-server/schema.json"
 }
