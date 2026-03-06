@@ -47,6 +47,14 @@ export function useTodos() {
 
       // Get server data
       const serverTodos = await todoService.getTodos()
+
+      // If localStorage is empty, use server data as source of truth
+      if (localTodos.length === 0) {
+        setTodos(serverTodos)
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(serverTodos))
+        return
+      }
+
       const serverMap = new Map(serverTodos.map((t) => [t.id, t]))
       const localMap = new Map(localTodos.map((t) => [t.id, t]))
 

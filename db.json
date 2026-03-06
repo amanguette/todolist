@@ -1,4 +1,25 @@
 {
-  "todos": [],
+  "todos": [
+    {
+      "id": "fc59",
+      "title": "online 1",
+      "completed": true
+    },
+    {
+      "id": "ec25",
+      "title": "online 2",
+      "completed": false
+    },
+    {
+      "id": "1e5c",
+      "title": "offline 1",
+      "completed": true
+    },
+    {
+      "id": "8fc8",
+      "title": "offline 2",
+      "completed": false
+    }
+  ],
   "$schema": "./node_modules/json-server/schema.json"
 }
