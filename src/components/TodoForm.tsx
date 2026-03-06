@@ -2,9 +2,10 @@ import { useState } from 'react'
 
 interface TodoFormProps {
   onAdd: (title: string) => void
+  disabled?: boolean
 }
 
-export function TodoForm({ onAdd }: TodoFormProps) {
+export function TodoForm({ onAdd, disabled = false }: TodoFormProps) {
   const [input, setInput] = useState('')
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -22,8 +23,9 @@ export function TodoForm({ onAdd }: TodoFormProps) {
         value={input}
         onChange={(e) => setInput(e.target.value)}
         placeholder="Add a new todo..."
+        disabled={disabled}
       />
-      <button type="submit">Add</button>
+      <button type="submit" disabled={disabled}>Add</button>
     </form>
   )
 }
