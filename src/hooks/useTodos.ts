@@ -4,11 +4,17 @@ import { todoService } from '../services/todoService'
 
 const STORAGE_KEY = 'todos'
 
+// Helper function to sort todos by order
+const sortByOrder = (todos: Todo[]): Todo[] => {
+  return [...todos].sort((a, b) => a.order - b.order)
+}
+
 export function useTodos() {
   const [todos, setTodos] = useState<Todo[]>(() => {
     // Load from localStorage immediately on mount
     const saved = localStorage.getItem(STORAGE_KEY)
-    return saved ? JSON.parse(saved) : []
+    const parsed = saved ? JSON.parse(saved) : []
+    return sortByOrder(parsed)
   })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -50,8 +56,9 @@ export function useTodos() {
 
       // If localStorage is empty, use server data as source of truth
       if (localTodos.length === 0) {
-        setTodos(serverTodos)
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(serverTodos))
+        const sortedServerData = sortByOrder(serverTodos)
+        setTodos(sortedServerData)
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(sortedServerData))
         return
       }
 
@@ -68,18 +75,21 @@ export function useTodos() {
             await todoService.addTodo({
               title: localTodo.title,
               completed: localTodo.completed,
+              order: localTodo.order,
             })
           } catch (err) {
             console.error('Failed to add todo to server:', err)
           }
         } else if (
           serverTodo.completed !== localTodo.completed ||
-          serverTodo.title !== localTodo.title
+          serverTodo.title !== localTodo.title ||
+          serverTodo.order !== localTodo.order
         ) {
           // Todo exists on both but is different, update server with local version
           try {
             await todoService.updateTodo(localTodo.id, {
               completed: localTodo.completed,
+              order: localTodo.order,
             })
           } catch (err) {
             console.error('Failed to update todo on server:', err)
@@ -101,8 +111,9 @@ export function useTodos() {
 
       // After syncing, reload from server to get the final state
       const finalServerData = await todoService.getTodos()
-      setTodos(finalServerData)
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(finalServerData))
+      const sortedData = sortByOrder(finalServerData)
+      setTodos(sortedData)
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(sortedData))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Sync failed')
       console.error('Sync error:', err)
@@ -126,30 +137,36 @@ export function useTodos() {
   const addTodo = useCallback(
     async (title: string) => {
       setError(null)
+      const maxOrder = todos.length > 0 ? Math.max(...todos.map((t) => t.order)) : -1
       const newTodo: Todo = {
         id: Date.now().toString(),
         title,
         completed: false,
+        order: maxOrder + 1,
       }
 
       try {
         if (isOnline) {
-          const serverTodo = await todoService.addTodo({ title, completed: false })
+          const serverTodo = await todoService.addTodo({ 
+            title, 
+            completed: false,
+            order: maxOrder + 1,
+          })
           setTodos((prev) => {
-            const updated = [...prev, serverTodo]
+            const updated = sortByOrder([...prev, serverTodo])
             localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
             return updated
           })
         } else {
           setTodos((prev) => {
-            const updated = [...prev, newTodo]
+            const updated = sortByOrder([...prev, newTodo])
             localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
             return updated
           })
         }
       } catch (err) {
         setTodos((prev) => {
-          const updated = [...prev, newTodo]
+          const updated = sortByOrder([...prev, newTodo])
           localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
           return updated
         })
@@ -171,7 +188,7 @@ export function useTodos() {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(newTodos))
 
         if (isOnline) {
-          todoService.updateTodo(id, { completed: !todo.completed }).catch((err) => {
+          todoService.updateTodo(id, { completed: !todo.completed }).catch(() => {
             setError('Failed to update - will retry when online')
           })
         }
@@ -186,13 +203,18 @@ export function useTodos() {
     async (id: string) => {
       setError(null)
       setTodos((prev) => {
-        const newTodos = prev.filter((t) => t.id !== id)
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(newTodos))
-        return newTodos
+        const filtered = prev.filter((t) => t.id !== id)
+        // Recalculate order values after deletion
+        const reordered = filtered.map((todo, index) => ({
+          ...todo,
+          order: index,
+        }))
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(reordered))
+        return reordered
       })
 
       if (isOnline) {
-        todoService.deleteTodo(id).catch((err) => {
+        todoService.deleteTodo(id).catch(() => {
           setError('Failed to delete - will retry when online')
         })
       }
@@ -200,5 +222,35 @@ export function useTodos() {
     [isOnline]
   )
 
-  return { todos, loading, error, addTodo, toggleTodo, removeTodo, isSyncing, isOnline }
+  const reorderTodos = useCallback(
+    async (reorderedTodos: Todo[]) => {
+      setError(null)
+      // Ensure data is sorted by order
+      const sortedTodos = sortByOrder(reorderedTodos)
+      
+      // Update local state and storage immediately
+      setTodos(sortedTodos)
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(sortedTodos))
+
+      // Sync to server if online
+      if (isOnline) {
+        try {
+          // Update all todos with their new order on the server
+          await Promise.all(
+            sortedTodos.map((todo) =>
+              todoService.updateTodo(todo.id, { order: todo.order })
+            )
+          )
+        } catch (err) {
+          setError('Failed to save order - will retry when online')
+          console.error('Order sync error:', err)
+        }
+      } else {
+        setError('Reorder saved locally - will sync when online')
+      }
+    },
+    [isOnline]
+  )
+
+  return { todos, loading, error, addTodo, toggleTodo, removeTodo, reorderTodos, isSyncing, isOnline }
 }

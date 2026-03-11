@@ -4,24 +4,24 @@ import { TodoForm } from './components/TodoForm'
 import { TodoList } from './components/TodoList'
 
 function App() {
-  const { todos, loading, error, addTodo, toggleTodo, removeTodo, isSyncing, isOnline } = useTodos()
+  const { todos, loading, error, addTodo, toggleTodo, removeTodo, reorderTodos, isSyncing, isOnline } = useTodos()
 
   return (
-    <>
-      <h1>My To-Do List</h1>
+    <div className="app">
+      <h1>Todolist</h1>
       
-      {error && <div style={{ color: 'red', marginBottom: '10px' }}>Error: {error}</div>}
+      {error && <div className="notification notification-error">⚠️ Error: {error}</div>}
       
-      {!isOnline && <div style={{ color: 'orange', marginBottom: '10px' }}>⚠️ You are offline - changes will sync when online</div>}
+      {!isOnline && <div className="notification notification-offline">⚠️ You are offline - changes will sync when online</div>}
       
-      {isSyncing && <div style={{ color: 'blue', marginBottom: '10px' }}>🔄 Syncing changes...</div>}
+      {isSyncing && <div className="notification notification-syncing">🔄 Syncing changes...</div>}
       
-      {loading && <p>Loading...</p>}
+      {loading && <p className="loading">Loading...</p>}
       
       <TodoForm onAdd={addTodo} disabled={loading} />
       
-      {!loading && <TodoList todos={todos} onToggle={toggleTodo} onRemove={removeTodo} />}
-    </>
+      {!loading && <TodoList todos={todos} onToggle={toggleTodo} onRemove={removeTodo} onReorder={reorderTodos} />}
+    </div>
   )
 }
 

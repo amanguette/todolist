@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import './TodoForm.css'
 
 interface TodoFormProps {
   onAdd: (title: string) => void
@@ -17,7 +18,7 @@ export function TodoForm({ onAdd, disabled = false }: TodoFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form className="todo-form" onSubmit={handleSubmit}>
       <input
         type="text"
         value={input}
