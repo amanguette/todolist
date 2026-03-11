@@ -4,7 +4,7 @@ import { TodoForm } from './components/TodoForm'
 import { TodoList } from './components/TodoList'
 
 function App() {
-  const { todos, loading, error, addTodo, toggleTodo, removeTodo, reorderTodos, isSyncing, isOnline } = useTodos()
+  const { todos, loading, error, addTodo, toggleTodo, removeTodo, editTodo, reorderTodos, isSyncing, isOnline } = useTodos()
 
   return (
     <div className="app">
@@ -20,7 +20,7 @@ function App() {
       
       <TodoForm onAdd={addTodo} disabled={loading} />
       
-      {!loading && <TodoList todos={todos} onToggle={toggleTodo} onRemove={removeTodo} onReorder={reorderTodos} />}
+      {!loading && <TodoList todos={todos} onToggle={toggleTodo} onRemove={removeTodo} onEdit={editTodo} onReorder={reorderTodos} />}
     </div>
   )
 }

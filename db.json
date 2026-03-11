@@ -4,7 +4,7 @@
       "id": "5e62",
       "title": "manger",
       "completed": false,
-      "order": 0
+      "order": 1
     },
     {
       "id": "a72b",
@@ -16,25 +16,25 @@
       "id": "d733",
       "title": "faire pipi",
       "completed": false,
-      "order": 1
-    },
-    {
-      "id": "779d",
-      "title": "faire un bisou à maman",
-      "completed": false,
       "order": 3
     },
     {
-      "id": "496b",
-      "title": "fair eun bisou à papa",
+      "id": "779d",
+      "title": "faire un bisou à papa et Orion",
       "completed": false,
-      "order": 4
+      "order": 0
+    },
+    {
+      "id": "496b",
+      "title": "faire un calin et des bisous à maman",
+      "completed": false,
+      "order": 5
     },
     {
       "id": "5094",
       "title": "faire un calin à Hélio",
       "completed": false,
-      "order": 5
+      "order": 4
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

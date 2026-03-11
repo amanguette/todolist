@@ -252,5 +252,28 @@ export function useTodos() {
     [isOnline]
   )
 
-  return { todos, loading, error, addTodo, toggleTodo, removeTodo, reorderTodos, isSyncing, isOnline }
+  const editTodo = useCallback(
+    async (id: string, newTitle: string) => {
+      setError(null)
+      setTodos((prev) => {
+        const todo = prev.find((t) => t.id === id)
+        if (!todo) return prev
+
+        const updated = { ...todo, title: newTitle }
+        const newTodos = prev.map((t) => (t.id === id ? updated : t))
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(newTodos))
+
+        if (isOnline) {
+          todoService.updateTodo(id, { title: newTitle }).catch(() => {
+            setError('Failed to update - will retry when online')
+          })
+        }
+
+        return newTodos
+      })
+    },
+    [isOnline]
+  )
+
+  return { todos, loading, error, addTodo, toggleTodo, removeTodo, reorderTodos, editTodo, isSyncing, isOnline }
 }

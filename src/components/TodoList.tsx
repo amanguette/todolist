@@ -7,10 +7,11 @@ interface TodoListProps {
   todos: Todo[]
   onToggle: (id: string) => void
   onRemove: (id: string) => void
+  onEdit: (id: string, title: string) => void
   onReorder: (reorderedTodos: Todo[]) => void
 }
 
-export function TodoList({ todos, onToggle, onRemove, onReorder }: TodoListProps) {
+export function TodoList({ todos, onToggle, onRemove, onEdit, onReorder }: TodoListProps) {
   const [draggedId, setDraggedId] = useState<string | null>(null)
   const [dragOverId, setDragOverId] = useState<string | null>(null)
 
@@ -64,6 +65,7 @@ export function TodoList({ todos, onToggle, onRemove, onReorder }: TodoListProps
           todo={todo}
           onToggle={onToggle}
           onRemove={onRemove}
+          onEdit={onEdit}
           onDragStart={() => handleDragStart(todo.id)}
           onDragOver={(e) => handleDragOver(e, todo.id)}
           onDrop={(e) => handleDrop(e, todo.id)}
